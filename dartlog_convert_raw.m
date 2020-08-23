@@ -1,9 +1,11 @@
 function dartlog_convert_raw(source, dest)
 %dartlog_convert_raw Converts a raw .dat file saved on the sd card by the DART logger
 
+disp("");
 disp("Converting raw to MATLAB");
 fprintf("source = %s\n", source);
 fprintf("dest = %s\n", dest);
+disp("");
 
 fid = fopen(source, 'r');
 
@@ -28,7 +30,7 @@ tagTypeMap = [ "uint8", "uint16", "uint32", "int8", "int16", "int32", "single" ]
 % Data
 data.("converter") = "MATLAB";
 
-lastPercentage = 0;
+lastPercentage = -1;
 disp("....");
 
 while ~feof(fid)
@@ -38,25 +40,33 @@ while ~feof(fid)
         lastPercentage = percentage;
     end
     
-    buf = fread(fid, 1);
+    buf = fread(fid, 2);
+    id = buf(1) * 256 + buf(2);
+    
     if isempty(buf) 
         break;
     end
     
-    if buf == 0 % create new tag
-        % Read the tag type
-        buf = fread(fid, 1);
-        tagIndex = buf;
+    if id == 0 % create new tag
+        % Read the tag id
+        buf = fread(fid, 2);
+        tagIndex = buf(1) * 256 + buf(2);
         
         if tagIndex <= 0
+            disp("");
+            disp("[Errror]");
             disp("Invalid tag index read");
+            fprintf("At byte: %d\n", ftell(fid));
             break;
         end
         
         % Read the tag type
         buf = fread(fid, 1);
         if (buf < 1) || (buf > 7)
+            disp("");
+            disp("[Errror]");
             disp("Invalid tag type read");
+            fprintf("At byte: %d\n", ftell(fid));
             break;
         end
         
@@ -80,13 +90,23 @@ while ~feof(fid)
             maxTagID = tagIndex;
         end
     else
-        id = buf;
         if (id < 0) || (id > maxTagID)
+            disp("");
+            disp("[Errror]");
             disp("Invalid id read");
+            fprintf("At byte: %d\n", ftell(fid));
             break;
         end
             
         buf = fread(fid, 1, tagTypeMap(tagTypes(id)));
+        
+        if length(buf) ~= 1
+            disp("");
+            disp("[Errror]");
+            disp("Invalid data read");
+            fprintf("At byte: %d\n", ftell(fid));
+            break;
+        end
         
         index = tagDataIndex(id);
         tagName = tags(id);
@@ -116,9 +136,14 @@ while ~feof(fid)
 end
 
 fclose(fid);
+disp("");
+disp("Note: errors at the end may be OK, because the vehicle was turned off before the last data could be written correctly");
+disp("");
+disp("");
 disp("Done...");
 disp("Saving...");
 save(dest, "data");
+disp("");
 
 end
 
