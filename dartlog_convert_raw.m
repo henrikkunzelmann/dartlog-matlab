@@ -41,11 +41,12 @@ while ~feof(fid)
     end
     
     buf = fread(fid, 2);
-    id = buf(1) * 256 + buf(2);
     
-    if isempty(buf) 
+    if isempty(buf) || length(buf) < 2 
         break;
     end
+    
+    id = buf(1) * 256 + buf(2);
     
     if id == 0 % create new tag
         % Read the tag id
