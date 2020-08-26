@@ -109,34 +109,65 @@ while ~feof(fid)
             break;
         end
         
-        index = tagDataIndex(id);
-        tagName = tags(id);
-        
-        % Time skew correction
-        if index > 1
-            % Use last value
-            index = index - 1;
-            
-            lastData = data.(tagName)(index);
-            
-            index = index + 1;
-            while index < timeIndex
-                data.(tagName)(index) = lastData;
+        try
+            index = tagDataIndex(id);
+            tagName = tags(id);
+
+            % Time skew correction
+            if index > 1
+                % Use last value
+                index = index - 1;
+
+                lastData = data.(tagName)(index);
+
                 index = index + 1;
+                while index < timeIndex
+                    data.(tagName)(index) = lastData;
+                    index = index + 1;
+                end
             end
-        end
-            
-        % Add newest value
-        data.(tagName)(index) = buf;
-        tagDataIndex(id) = index + 1;
-        
-        if tagName == "time"
-            timeIndex = index;
+
+            % Add newest value
+            data.(tagName)(index) = buf;
+            tagDataIndex(id) = index + 1;
+
+            if tagName == "time"
+                timeIndex = index;
+            end
+        catch
+            disp("");
+            disp("[Errror]");
+            disp("Invalid data read (error while copying data)");
+            fprintf("At byte: %d\n", ftell(fid));
         end
     end
 end
 
 fclose(fid);
+
+% Ensure all arrays have the same length
+
+% Time array length
+timeLength = length(data.("time"));
+
+% Match array lengths for easier plotting
+fn = fieldnames(data);
+for k=1:numel(fn)
+    values = data.(fn{k});
+    len = length(values);
+    if (len == 1) % only metadata
+        continue;
+    end 
+       
+    if (len > timeLength) % trim array -> too long
+        data.(fn{k}) = values(1:timeLength);
+    elseif (len < timeLength) % end array -> too short
+        for i=len+1:timeLength
+            data.(fn{k})(i) = 0;
+        end
+    end
+end
+
 disp("");
 disp("Note: errors at the end may be OK, because the vehicle was turned off before the last data could be written correctly");
 disp("");
