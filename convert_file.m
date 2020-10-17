@@ -11,8 +11,14 @@ end
 fprintf("Got %d files", length(file));
 disp("==============");
 
-for k=1:length(file)
-    fileName = char(fullfile(path, file(k)));
+if iscell(file)
+    for k=1:length(file)
+        fileName = char(fullfile(path, file(k)));
+        dartlog_convert_raw(fileName, strrep(fileName, '.dat','.mat'));
+        disp("==============");
+    end
+else
+    fileName = char(fullfile(path, file));
     dartlog_convert_raw(fileName, strrep(fileName, '.dat','.mat'));
     disp("==============");
 end
