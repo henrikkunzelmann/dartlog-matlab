@@ -2,13 +2,19 @@
 % Convert a raw logging file using dartlog_convert_raw.
 %
 
+% You can select multiple .dat files.
+
 [file, path] = uigetfile('*.dat', 'Select File','MultiSelect','on');
 
 if isnumeric(file)
     error("No file selected")
 end
 
-fprintf("Got %d files", length(file));
+if iscell(file)
+    fprintf("Got %d files\n", length(file));
+else
+    fprintf("Got 1 file\n");
+end
 disp("==============");
 
 if iscell(file)

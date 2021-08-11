@@ -1,3 +1,5 @@
+% DO NOT CALL THIS SCRIPT DIRECTLY, USE convert_file.m INSTEAD!
+
 function dartlog_convert_raw(source, dest)
 %dartlog_convert_raw Converts a raw .dat file saved on the sd card by the DART logger
 
@@ -167,6 +169,9 @@ for k=1:numel(fn)
         end
     end
 end
+
+% Sort fields
+data = orderfields(data)
 
 disp("");
 disp("Note: errors at the end may be OK, because the vehicle was turned off before the last data could be written correctly");
