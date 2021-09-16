@@ -92,6 +92,10 @@ while ~feof(fid)
         if tagIndex > maxTagID
             maxTagID = tagIndex;
         end
+        
+        if tagName ~= "time"
+            data.(tagName) = zeros(1, 256000);
+        end
     else
         if (id < 0) || (id > maxTagID)
             disp("");
@@ -114,7 +118,7 @@ while ~feof(fid)
         try
             index = tagDataIndex(id);
             tagName = tags(id);
-
+            
             % Time skew correction
             if index > 1
                 % Use last value
@@ -171,7 +175,7 @@ for k=1:numel(fn)
 end
 
 % Sort fields
-data = orderfields(data)
+data = orderfields(data);
 
 disp("");
 disp("Note: errors at the end may be OK, because the vehicle was turned off before the last data could be written correctly");
