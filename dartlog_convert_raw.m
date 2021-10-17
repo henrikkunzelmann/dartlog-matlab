@@ -27,7 +27,7 @@ tagDataIndex = zeros(4096);
 tagTypes = zeros(4096);
 maxTagID = 0;
 
-tagTypeMap = [ "uint8", "uint16", "uint32", "int8", "int16", "int32", "single" ];
+tagTypeMap = [ "uint8", "uint16", "uint32", "int8", "int16", "int32", "single", "double", "uint64", "int64" ];
 
 % Data
 data.("converter") = "MATLAB";
