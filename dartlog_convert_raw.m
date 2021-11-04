@@ -1,6 +1,6 @@
 % DO NOT CALL THIS SCRIPT DIRECTLY, USE convert_file.m INSTEAD!
 
-function dartlog_convert_raw(source, dest)
+function dartlog_convert_raw(source, dest, progress_full)
 %dartlog_convert_raw Converts a raw .dat file saved on the sd card by the DART logger
 
 disp("");
@@ -38,7 +38,7 @@ disp("....");
 while ~feof(fid)
     percentage = floor((ftell(fid) / fileInfo.bytes) * 100);
     if percentage ~= lastPercentage
-        fprintf("%d%%...\n", percentage);
+        fprintf("%s%d%%...\n", progress_full, percentage);
         lastPercentage = percentage;
     end
     

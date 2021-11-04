@@ -20,12 +20,13 @@ disp("==============");
 if iscell(file)
     for k=1:length(file)
         fileName = char(fullfile(path, file(k)));
-        dartlog_convert_raw(fileName, strrep(fileName, '.dat','.mat'));
+        progress_full = "(" + k + "/" + length(file) + " " + round(((k - 1) / length(file)) * 100) + "%) current file: ";
+        dartlog_convert_raw(fileName, strrep(fileName, '.dat','.mat'), progress_full);
         disp("==============");
     end
 else
     fileName = char(fullfile(path, file));
-    dartlog_convert_raw(fileName, strrep(fileName, '.dat','.mat'));
+    dartlog_convert_raw(fileName, strrep(fileName, '.dat','.mat'), "");
     disp("==============");
 end
 
