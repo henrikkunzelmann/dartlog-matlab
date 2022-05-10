@@ -65,7 +65,7 @@ while ~feof(fid)
         
         % Read the tag type
         buf = fread(fid, 1);
-        if (buf < 1) || (buf > 7)
+        if (buf < 1) || (buf > 10)
             disp("");
             disp("[Errror]");
             disp("Invalid tag type read");
