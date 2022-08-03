@@ -84,6 +84,9 @@ while ~feof(fid)
             end
             tagName = strcat(tagName, char(buf));
         end
+
+        tagName = strrep(tagName, '-', '_');
+        tagName = substr(tagName, 0, 63);
         
         % Add to tags
         tags(tagIndex) = tagName;
