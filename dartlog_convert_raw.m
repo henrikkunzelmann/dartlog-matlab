@@ -23,6 +23,7 @@ end
     
 % Read tags
 timeIndex = 0;
+tags = [""];
 tagDataIndex = zeros(4096);
 tagTypes = zeros(4096);
 maxTagID = 0;
@@ -85,8 +86,17 @@ while ~feof(fid)
             tagName = strcat(tagName, char(buf));
         end
 
-        tagName = strrep(tagName, '-', '_');
-        tagName = substr(tagName, 0, 63);
+        tagNameUnshorted = strrep(tagName, '-', '_');
+        if strlength(tagNameUnshorted) >= 60
+            tagName = extractBetween(tagNameUnshorted, 1, 60);
+            tagNameAddIndex = 0;
+            while length(find(tags == tagName)) >= 1
+                tagName = strcat(tagNameUnshorted, num2str(tagNameAddIndex));
+                tagNameAddIndex = tagNameAddIndex + 1;
+            end
+        else
+            tagName = tagNameUnshorted;
+        end
         
         % Add to tags
         tags(tagIndex) = tagName;
