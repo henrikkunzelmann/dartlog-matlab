@@ -28,6 +28,8 @@ tagDataIndex = zeros(4096);
 tagTypes = zeros(4096);
 maxTagID = 0;
 
+maxTagNameLength = 58;
+
 tagTypeMap = [ "uint8", "uint16", "uint32", "int8", "int16", "int32", "single", "double", "uint64", "int64" ];
 
 % Data
@@ -87,11 +89,12 @@ while ~feof(fid)
         end
 
         tagNameUnshorted = strrep(tagName, '-', '_');
-        if strlength(tagNameUnshorted) >= 60
-            tagName = extractBetween(tagNameUnshorted, 1, 60);
+        if strlength(tagNameUnshorted) >= maxTagNameLength
+            tagNameShorted = extractBetween(tagNameUnshorted, 1, maxTagNameLength);
+            tagName = tagNameShorted;
             tagNameAddIndex = 0;
             while length(find(tags == tagName)) >= 1
-                tagName = strcat(tagNameUnshorted, num2str(tagNameAddIndex));
+                tagName = strcat(tagNameShorted, num2str(tagNameAddIndex));
                 tagNameAddIndex = tagNameAddIndex + 1;
             end
         else
