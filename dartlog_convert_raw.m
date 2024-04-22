@@ -16,16 +16,29 @@ fileInfo = dir(source);
 
 % Read and check header
 header = fread(fid, 8);
-exceptedHeader = [68;65;82;84;76;79;71;0];
-if ~isequal(header, exceptedHeader)
-    error("Not a DARTLOG file")
+
+isDARTLOG1 = isequal(header, [68;65;82;84;76;79;71;0]);
+
+
+if ~isDARTLOG1
+    isDARTLOG2 = isequal(header, [68;65;82;84;76;79;71;50]);
+    if ~isDARTLOG2
+        error("Not a DARTLOG file")
+    end
+    fread(fid, 1); % read 0 ending
+end
+
+if isDARTLOG1
+    disp("Is DARTLOG1 file");
+elseif isDARTLOG2
+    disp("Is DARTLOG2 file");
 end
     
 % Read tags
 timeIndex = 0;
 tags = [""];
-tagDataIndex = zeros(4096);
-tagTypes = zeros(4096);
+tagDataIndex = zeros(1, 4096);
+tagTypes = zeros(1, 4096);
 maxTagID = 0;
 
 maxTagNameLength = 58;
@@ -88,7 +101,27 @@ while ~feof(fid)
             tagName = strcat(tagName, char(buf));
         end
 
-        tagNameUnshorted = strrep(tagName, '-', '_');
+        % Read attributes (if supported by format)
+        if isDARTLOG2
+            while 1
+                type = fread(fid, 1);
+                if type == 0 % end attribute list
+                    break;
+                end
+
+                len = fread(fid, 1);
+                buf = fread(fid, len); 
+                % ignore data for now
+            end
+        end
+
+        % Clean tagName
+        tagName = strrep(tagName, '-', '_');
+        tagName = strrep(tagName, '/', '_');
+		tagName = strrep(tagName, ':', '');
+
+        % Short tag name if too long
+        tagNameUnshorted = tagName;
         if strlength(tagNameUnshorted) >= maxTagNameLength
             tagNameShorted = extractBetween(tagNameUnshorted, 1, maxTagNameLength);
             tagName = tagNameShorted;
@@ -97,8 +130,14 @@ while ~feof(fid)
                 tagName = strcat(tagNameShorted, num2str(tagNameAddIndex));
                 tagNameAddIndex = tagNameAddIndex + 1;
             end
-        else
-            tagName = tagNameUnshorted;
+        end
+
+        if strlength(tagName) == 0
+            disp("");
+            disp("[Errror]");
+            disp("Invalid empty tag name read");
+            fprintf("At byte: %d\n", ftell(fid));
+            break;
         end
         
         % Add to tags
@@ -120,18 +159,18 @@ while ~feof(fid)
             fprintf("At byte: %d\n", ftell(fid));
             break;
         end
+
+        try   
+            buf = fread(fid, 1, tagTypeMap(tagTypes(id)));
             
-        buf = fread(fid, 1, tagTypeMap(tagTypes(id)));
+            if length(buf) ~= 1
+                disp("");
+                disp("[Errror]");
+                disp("Invalid data read");
+                fprintf("At byte: %d\n", ftell(fid));
+                break;
+            end
         
-        if length(buf) ~= 1
-            disp("");
-            disp("[Errror]");
-            disp("Invalid data read");
-            fprintf("At byte: %d\n", ftell(fid));
-            break;
-        end
-        
-        try
             index = tagDataIndex(id);
             tagName = tags(id);
             
