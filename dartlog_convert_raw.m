@@ -18,6 +18,7 @@ fileInfo = dir(source);
 header = fread(fid, 8);
 
 isDARTLOG1 = isequal(header, [68;65;82;84;76;79;71;0]);
+isDARTLOG2 = false;
 
 
 if ~isDARTLOG1
