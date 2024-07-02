@@ -41,6 +41,7 @@ tags = [""];
 tagDataIndex = zeros(1, 4096);
 tagTypes = zeros(1, 4096);
 maxTagID = 0;
+lastID = 0;
 
 maxTagNameLength = 58;
 
@@ -58,19 +59,44 @@ while ~feof(fid)
         fprintf("%s%d%%...\n", progress_full, percentage);
         lastPercentage = percentage;
     end
-    
-    buf = fread(fid, 2);
-    
-    if isempty(buf) || length(buf) < 2 
-        break;
+
+    if isDARTLOG2
+        % DARTLOG2 path
+        buf = fread(fid, 1);
+        idPart = buf(1);
+        
+        if isempty(buf) || length(buf) < 1 
+            break;
+        end
+        
+        if idPart < 254
+            id = idPart;
+        elseif idPart == 254
+            id = lastID + 1;
+        else % idPart == 255
+            buf = fread(fid, 2);
+        
+            if isempty(buf) || length(buf) < 2 
+                break;
+            end
+            id = buf(1) + buf(2) * 256;
+        end
+    else
+        % DARTLOG1 path
+        buf = fread(fid, 2);
+        
+        if isempty(buf) || length(buf) < 2 
+            break;
+        end
+        id = buf(1) + buf(2) * 256;
     end
-    
-    id = buf(1) * 256 + buf(2);
+   
+    lastID = id;
     
     if id == 0 % create new tag
         % Read the tag id
         buf = fread(fid, 2);
-        tagIndex = buf(1) * 256 + buf(2);
+        tagIndex = buf(1) + buf(2) * 256;
         
         if tagIndex <= 0
             disp("");
