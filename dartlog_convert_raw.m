@@ -63,11 +63,12 @@ while ~feof(fid)
     if isDARTLOG2
         % DARTLOG2 path
         buf = fread(fid, 1);
-        idPart = buf(1);
         
         if isempty(buf) || length(buf) < 1 
             break;
         end
+
+        idPart = buf(1);
         
         if idPart < 254
             id = idPart;
